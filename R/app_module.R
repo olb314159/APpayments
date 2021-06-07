@@ -7,7 +7,7 @@
 #' @param id the Shiny module id
 #' @param custom_ui Either \code{NULL}, the default, or a list of 2 elements containing custom
 #' UI to add additional 'shinydashboard' tabs to the 'polished' "Admin Panel".
-#' @param app_name the app name to display to users.
+#' app_name the app name to display to users.
 #'
 #' @export
 #'
@@ -23,8 +23,8 @@
 #'
 app_module_ui <- function(
   id,
-  custom_ui = NULL,
-  app_name = getOption("polished")$app_name_display
+  custom_ui = NULL
+  # app_name = getOption("polished")$app_name_display
 ) {
   ns <- shiny::NS(id)
 
@@ -33,11 +33,11 @@ app_module_ui <- function(
   stripe_key_public <- getOption("pp")$keys$public
 
   head <- shinydashboardPlus::dashboardHeaderPlus(
-    title = "Payments",
+    title = "Account",
     left_menu = tagList(
       shiny::actionLink(
         ns("go_to_shiny_app"),
-        paste0("Go to ", app_name),
+        paste0("Get Back to Investing"),
         style = "margin-left: -15px; margin-top: -7.5px; color: #1a8dc7; font-size: 18px;"
       )
     ),
@@ -48,7 +48,7 @@ app_module_ui <- function(
     sidebar <- shinydashboard::dashboardSidebar(
       shinydashboard::sidebarMenu(
         id = ns("sidebar_menu"),
-        shinydashboard::menuItem("Billing", tabName = ns("billing"), icon = icon("credit-card"))
+        shinydashboard::menuItem("Payments", tabName = ns("billing"), icon = icon("credit-card"))
       )
     )
   } else {
@@ -89,7 +89,7 @@ app_module_ui <- function(
 
   body <- shinydashboard::dashboardBody(
     tags$head(
-      tags$link(rel = "shortcut icon", href = "polishedpayments/images/polished_logo_transparent.png"),
+      tags$link(rel = "shortcut icon", href = "images/advancedport.ico"),
       tags$script(src = "https://js.stripe.com/v3"),
       tags$script(paste0("var stripe = Stripe('", stripe_key_public, "');")),
       shinyjs::useShinyjs(),
@@ -105,7 +105,7 @@ app_module_ui <- function(
     head,
     sidebar,
     body,
-    title = "Polished",
+    title = "Account | AdvancedPort",
     skin = "black-light"
   )
 }
@@ -152,7 +152,7 @@ app_module <- function(id) {
 
           shinyWidgets::show_alert(
             title = "Update Subscription",
-            text = "Please select a subscription to access the Shiny app.",
+            text = "Please select a subscription to access our investment tools.",
             type = "error"
           )
 
@@ -164,14 +164,14 @@ app_module <- function(id) {
         } else {
           shinyWidgets::show_alert(
             title = "Update Payment Method",
-            text = 'Go to the "Billing" page and enter your credit card information to access the app.',
+            text = 'Go to the "Payments" page and enter your payment information to access our investment tools.',
             type = "error"
           )
         }
 
       }, ignoreInit = TRUE)
 
-      # get the user'd billing information from the "billing" table
+      # get the user's billing information from the "billing" table
       session$userData$billing <- reactiveVal(NULL)
       session$userData$billing_trigger <- reactiveVal(0)
 

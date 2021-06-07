@@ -1,11 +1,30 @@
 Package: APpayments
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Stripe Payments Integration with Polished
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Author: person("Oliver", "Brown", email = "oliver.brown@advancedport.com", role = c("aut"))
+Maintainer: Oliver Brown <oliver.brown@advancedport.com>
+Description: Integration between Polished and Stripe Subscription Payments
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Imports:
+    dplyr,
+    dbplyr,
+    DT,
+    htmltools,
+    httr,
+    jsonlite,
+    polished,
+    shiny,
+    shinydashboard,
+    shinydashboardPlus,
+    shinyFeedback,
+    shinyjs,
+    shinyWidgets,
+    waiter
+RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
