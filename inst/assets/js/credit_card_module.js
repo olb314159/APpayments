@@ -25,23 +25,23 @@ function credit_card_module(ns_prefix) {
         iconStyle: 'solid',
         style: {
           base: {
-            iconColor: '#2491eb',
+            iconColor: '#6f7bd4',
             color: '#000',
             fontWeight: 500,
-            fontFamily: 'Roboto, Open Sans, Segoe UI, sans-serif',
+            fontFamily: 'sans-serif',
             fontSize: '16px',
             fontSmoothing: 'antialiased',
 
             ':-webkit-autofill': {
-              color: '#fce883',
+              color: '#6f7bd4',
             },
             '::placeholder': {
-              color: '#87BBFD',
+              color: '#6f7bd4',
             },
           },
           invalid: {
-            iconColor: '#dd4b39',
-            color: '#dd4b39',
+            iconColor: '#6f7bd4',
+            color: '#6f7bd4',
           },
         },
       });

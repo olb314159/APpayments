@@ -15,7 +15,7 @@ billing_module_ui <- function(id) {
     ")),
     shiny::fluidRow(
       shinydashboard::box(
-        title = "Account Information",
+        title = "Subscription Information",
         width = 12,
         shiny::column(
           12,
@@ -73,7 +73,7 @@ billing_module_ui <- function(id) {
             ns("cancel_subscription"),
             "Cancel Subscription",
             class = "btn-primary pull-right",
-            style = "color: #FFF; width: 150px;"
+            style = "color: #FFF; width: 150px; background-color: #6f7bd4;"
           ))
         )
       )
@@ -89,7 +89,7 @@ billing_module_ui <- function(id) {
       id = ns("billing_info_box"),
       shiny::fluidRow(
         shinydashboard::box(
-          title = "Billing Information",
+          title = "Payment Information",
           width = 12,
           tags$div(
             id = ns("billing_info"),
@@ -158,22 +158,22 @@ billing_module_ui <- function(id) {
               tags$br(),
               shiny::actionButton(
                 ns("update_billing_info"),
-                "Update Billing",
+                "Update Payment",
                 class = "btn-primary pull-right",
-                style = "color: #FFF; width: 150px;"
+                style = "color: #FFF; width: 150px; background-color: #6f7bd4;"
               )
             )
           ),
           shinyjs::hidden(tags$div(
             id = ns("enable_billing_button"),
             class = "text-center",
-            tags$h3("Billing is not enabled"),
+            tags$h3("Payment is not enabled"),
             tags$br(),
             shiny::actionButton(
               ns("enable_billing"),
-              "Enable Billing",
+              "Enable Payment",
               class = "btn-primary btn-lg",
-              style = "color: #FFF"
+              style = "color: #FFF; background-color: #6f7bd4;"
             ),
             tags$br(),
             tags$br(),
@@ -234,18 +234,25 @@ billing_module <- function(input, output, session, sub_info) {
             ns("submit_cancel"),
             "Yes, Submit",
             class = "btn-danger",
-            style = "color: #FFF"
+            style = "color: #FFF; background-color: #6f7bd4;"
           )
         ),
         size = "m",
         easyClose = TRUE,
         tags$div(
           class = "text-center",
-          tags$br(),
-          tags$h3(
-            style = "line-height: 1.5",
+
+          tags$h4(
+            style = "line-height: 1",
             htmltools::HTML(paste0(
-              'Are you sure you want to cancel the ', tags$b(subscription_name), 'subscription?'
+              'Are you sure you want to cancel your ', subscription_name, ' subscription?'
+            ))
+          ),
+          tags$br(),
+          tags$h4(
+            style = "line-height: 1",
+            htmltools::HTML(paste0(
+              'Your subscription will end on INVOICE DATATABLE'
             ))
           ),
           tags$br(), tags$br()
@@ -262,10 +269,13 @@ billing_module <- function(input, output, session, sub_info) {
 
     tryCatch({
 
-      ## Remove Subscription
-      res <- httr::DELETE(
+      ## Update stripe Subscription to cancel at the end of the period
+      res <- httr::POST(
         paste0("https://api.stripe.com/v1/subscriptions/", subscription$id),
         encode = "form",
+        body = list(
+          "cancel_at_period_end" = "true"
+        ),
         httr::authenticate(
           user = getOption("pp")$keys$secret,
           password = ""
@@ -291,7 +301,7 @@ billing_module <- function(input, output, session, sub_info) {
         encode = "json",
         body = list(
           subscription_uid = billing$uid,
-          stripe_subscription_id = NA,
+          stripe_subscription_id = subscription$id, #NA
           free_trial_days_remaining_at_cancel = subscription$trial_days_remaining
         ),
         httr::authenticate(
