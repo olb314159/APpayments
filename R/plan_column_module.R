@@ -215,7 +215,7 @@ plan_column_module <- function(input, output, session,
         paste0("https://api.stripe.com/v1/subscriptions/", billing$stripe_subscription_id),
         body = list(
           cancel_at_period_end="false",
-          proration_behavior="create_prorations",
+          proration_behavior="always_invoice",
           `items[0][id]`= hold_sub_info$item_id,
           `items[0][price]`= plan_id
         ),

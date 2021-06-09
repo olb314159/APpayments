@@ -3,6 +3,8 @@
 #' @param id the module id
 #'
 #'
+#'
+#'
 billing_module_ui <- function(id) {
   ns <- NS(id)
 
@@ -68,12 +70,34 @@ billing_module_ui <- function(id) {
         ),
         shiny::column(
           12,
+          tags$div(
+            style = "width: 150px; display: inline-block;",
+            tags$h4(tags$strong("Renewal Date"))
+          ),
+          tags$div(
+            style = "display: inline-block",
+            tags$h4(shiny::textOutput(ns("renewal_date_out")))
+          ),
+          tags$hr(style = "margin: 0;")
+        ),
+        shiny::column(
+          12,
           tags$br(),
           shinyjs::hidden(shiny::actionButton(
             ns("cancel_subscription"),
             "Cancel Subscription",
             class = "btn-primary pull-right",
             style = "color: #FFF; width: 150px; background-color: #6f7bd4;"
+          ))
+        ),
+        shiny::column(
+          12,
+          tags$br(),
+          shinyjs::hidden(shiny::actionButton(
+            ns("continue_subscription"),
+            "Continue Subscription",
+            class = "btn-primary pull-right",
+            style = "color: #FFF; width: 200px; background-color: #6f7bd4;"
           ))
         )
       )
@@ -209,6 +233,8 @@ billing_module_ui <- function(id) {
 #' @param session the Shiny server session
 #' @param sub_info the subscription information
 #'
+#' @import lubridate
+#' @importFrom anytime anydate
 #' @importFrom dplyr %>% select mutate .data
 #' @importFrom DT renderDT datatable
 #' @importFrom jsonlite fromJSON
@@ -218,7 +244,6 @@ billing_module_ui <- function(id) {
 #'
 billing_module <- function(input, output, session, sub_info) {
   ns <- session$ns
-
 
   ### CANCEL SUBSCRIPTION ###
   observeEvent(input$cancel_subscription, {
@@ -269,7 +294,7 @@ billing_module <- function(input, output, session, sub_info) {
 
     tryCatch({
 
-      ## Update stripe Subscription to cancel at the end of the period
+      #Update stripe Subscription to cancel at the end of the period
       res <- httr::POST(
         paste0("https://api.stripe.com/v1/subscriptions/", subscription$id),
         encode = "form",
@@ -330,16 +355,138 @@ billing_module <- function(input, output, session, sub_info) {
     shiny::removeModal()
   })
 
-  shiny::observeEvent(session$userData$billing(), {
+  #Continue subscription if user changes their mind before the subscription ends
+  observeEvent(input$continue_subscription, {
+    req(sub_info())
+    subscription_name <- sub_info()$nickname
+
+    shiny::showModal(
+      shiny::modalDialog(
+        title = "Continue Subscription",
+        footer = list(
+          shiny::modalButton("No, Close"),
+          shiny::actionButton(
+            ns("submit_continue"),
+            "Yes, Submit",
+            class = "btn-danger",
+            style = "color: #FFF; background-color: #6f7bd4;"
+          )
+        ),
+        size = "m",
+        easyClose = TRUE,
+        tags$div(
+          class = "text-center",
+
+          tags$h4(
+            style = "line-height: 1",
+            htmltools::HTML(paste0(
+              'After clicking submit, your ', subscription_name, ' subscription will renew on INVOICE DATATABLE'
+            ))
+          ),
+          tags$br(), tags$br()
+        )
+      )
+    )
+  })
+
+  shiny::observeEvent(input$submit_continue, {
+    shiny::req(sub_info())
+
     billing <- session$userData$billing()
+    subscription <- sub_info()
+
+    tryCatch({
+
+      #Update stripe Subscription to continue at the end of the period
+      res <- httr::POST(
+        paste0("https://api.stripe.com/v1/subscriptions/", subscription$id),
+        encode = "form",
+        body = list(
+          "cancel_at_period_end" = "false"
+        ),
+        httr::authenticate(
+          user = getOption("pp")$keys$secret,
+          password = ""
+        )
+      )
+
+      res_content <- jsonlite::fromJSON(
+        httr::content(res, "text", encoding = "UTF-8")
+      )
+
+      res_code <- httr::status_code(res)
+      if (!identical(res_code, 200L)) {
+        print(res_content)
+        print(paste0("status code: ", res_code))
+        stop("unable to delete subscription")
+      }
+
+      # Remove Subscription ID from 'billing' table and update the free trial days
+      # remaining at cancel. The "free_trial_days_remaining_at_cancel" will be used
+      # to set the proper amount of free trial days if the user restarts their subscription.
+      res <- httr::PUT(
+        url = paste0(getOption("polished")$api_url, "/subscriptions"),
+        encode = "json",
+        body = list(
+          subscription_uid = billing$uid,
+          stripe_subscription_id = subscription$id #NA
+        ),
+        httr::authenticate(
+          user = getOption("polished")$api_key,
+          password = ""
+        )
+      )
+
+      if (!identical(httr::status_code(res), 200L)) {
+
+        res_content <- jsonlite::fromJSON(
+          httr::content(res, "text", encoding = "UTF-8")
+        )
+
+        stop(res_content, call. = FALSE)
+      }
+
+      session$userData$billing_trigger(session$userData$billing_trigger() + 1)
+      shinyFeedback::showToast("success", "Subscription Cancelled Successfully")
+    }, error = function(err) {
+
+      print(err)
+      shinyFeedback::showToast("error", "Error Cancelling Subscription")
+    })
+
+    shiny::removeModal()
+  })
+
+  shiny::observeEvent(session$userData$billing(), {
+    shiny::req(sub_info())
+    subscription <- sub_info()
+    billing <- session$userData$billing()
+
+    res <- httr::GET(
+      paste0("https://api.stripe.com/v1/subscriptions/", subscription$id),
+      encode = "form",
+      httr::authenticate(
+        user = getOption("pp")$keys$secret,
+        password = ""
+      )
+    )
+
+    res_content <- jsonlite::fromJSON(
+      httr::content(res, "text", encoding = "UTF-8")
+    )
 
     if (is.na(billing$stripe_subscription_id)) {
       shinyjs::hide("cancel_subscription")
       shinyjs::hide("billing_info_box")
+    } else if (!is.null(res_content$cancel_at)) {
+      shinyjs::show("billing_info_box")
+      shinyjs::show("continue_subscription")
     } else {
       shinyjs::show("cancel_subscription")
       shinyjs::show("billing_info_box")
+
     }
+
   })
 
 
@@ -410,6 +557,33 @@ billing_module <- function(input, output, session, sub_info) {
     as.character(Sys.Date() + hold$trial_days_remaining)
   })
 
+  output$renewal_date_out <- shiny::renderText({
+    shiny::req(sub_info())
+    subscription <- sub_info()
+    billing <- session$userData$billing()
+
+    res <- httr::GET(
+      paste0("https://api.stripe.com/v1/subscriptions/", subscription$id),
+      encode = "form",
+      httr::authenticate(
+        user = getOption("pp")$keys$secret,
+        password = ""
+      )
+    )
+
+    res_content <- jsonlite::fromJSON(
+      httr::content(res, "text", encoding = "UTF-8")
+    )
+
+    if (is.na(billing$stripe_subscription_id)) {
+      out <- "No Subscription"
+    } else {
+      current_period_end <- unlist(res_content$current_period_end)
+      out <- as.Date(as.POSIXct(1654705827, origin = "1970-01-01"))
+    }
+
+    out
+  })
 
   callModule(
     plans_box_module,
