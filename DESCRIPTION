@@ -9,8 +9,6 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Imports:
-    anytime,
-    lubridate,
     dplyr,
     dbplyr,
     DT,
@@ -24,7 +22,8 @@ Imports:
     shinyFeedback,
     shinyjs,
     shinyWidgets,
-    waiter
+    waiter,
+    zipcodeR
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

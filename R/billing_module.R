@@ -87,7 +87,7 @@ billing_module_ui <- function(id) {
             ns("cancel_subscription"),
             "Cancel Subscription",
             class = "btn-primary pull-right",
-            style = "color: #FFF; width: 150px; background-color: #6f7bd4;"
+            style = "color: #FFF; width: 150px; background-color: #6f7bd4; border-color: #6f7bd4;"
           ))
         ),
         shiny::column(
@@ -97,7 +97,7 @@ billing_module_ui <- function(id) {
             ns("continue_subscription"),
             "Continue Subscription",
             class = "btn-primary pull-right",
-            style = "color: #FFF; width: 200px; background-color: #6f7bd4;"
+            style = "color: #FFF; width: 180px; background-color: #6f7bd4; border-color: #6f7bd4;"
           ))
         )
       )
@@ -184,7 +184,7 @@ billing_module_ui <- function(id) {
                 ns("update_billing_info"),
                 "Update Payment",
                 class = "btn-primary pull-right",
-                style = "color: #FFF; width: 150px; background-color: #6f7bd4;"
+                style = "color: #FFF; width: 150px; background-color: #6f7bd4; border-color: #6f7bd4;"
               )
             )
           ),
@@ -197,7 +197,7 @@ billing_module_ui <- function(id) {
               ns("enable_billing"),
               "Enable Payment",
               class = "btn-primary btn-lg",
-              style = "color: #FFF; background-color: #6f7bd4;"
+              style = "color: #FFF; background-color: #6f7bd4; border-color: #6f7bd4;"
             ),
             tags$br(),
             tags$br(),
@@ -233,8 +233,6 @@ billing_module_ui <- function(id) {
 #' @param session the Shiny server session
 #' @param sub_info the subscription information
 #'
-#' @import lubridate
-#' @importFrom anytime anydate
 #' @importFrom dplyr %>% select mutate .data
 #' @importFrom DT renderDT datatable
 #' @importFrom jsonlite fromJSON
@@ -277,7 +275,7 @@ billing_module <- function(input, output, session, sub_info) {
           tags$h4(
             style = "line-height: 1",
             htmltools::HTML(paste0(
-              'Your subscription will end on INVOICE DATATABLE'
+              'Your subscription will end on the renewal date.'
             ))
           ),
           tags$br(), tags$br()
@@ -380,7 +378,8 @@ billing_module <- function(input, output, session, sub_info) {
           tags$h4(
             style = "line-height: 1",
             htmltools::HTML(paste0(
-              'After clicking submit, your ', subscription_name, ' subscription will renew on INVOICE DATATABLE'
+              'After clicking submit, your ', subscription_name,
+              ' subscription will renew on the renewal date.'
             ))
           ),
           tags$br(), tags$br()
@@ -579,7 +578,7 @@ billing_module <- function(input, output, session, sub_info) {
       out <- "No Subscription"
     } else {
       current_period_end <- unlist(res_content$current_period_end)
-      out <- as.Date(as.POSIXct(1654705827, origin = "1970-01-01"))
+      out <- as.character(as.Date(as.POSIXct(current_period_end, origin = "1970-01-01")))
     }
 
     out

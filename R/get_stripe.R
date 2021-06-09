@@ -8,11 +8,13 @@
 #'
 #' @export
 #'
+#' @importFrom zipcodeR reverse_zipcode
+#'
 get_stripe_subscription <- function(
   stripe_subscription_id
 ) {
 
-  res <- httr::GET(
+  sub_res <- httr::GET(
     paste0("https://api.stripe.com/v1/subscriptions/", stripe_subscription_id),
     encode = "form",
     httr::authenticate(
@@ -21,38 +23,41 @@ get_stripe_subscription <- function(
     )
   )
 
-  res_content <- jsonlite::fromJSON(
-    httr::content(res, "text", encoding = "UTF-8")
+  sub_res_content <- jsonlite::fromJSON(
+    httr::content(sub_res, "text", encoding = "UTF-8")
   )
 
 
-  status <- httr::status_code(res)
+  status <- httr::status_code(sub_res)
 
 
 
   if (!identical(status, 200L)) {
-    print(res_content)
+    print(sub_res_content)
     stop("error getting Stripe subscription", call. = FALSE)
   }
-  if (res_content$status == "canceled") {
+  if (sub_res_content$status == "canceled") {
     stop("subscription canceled", call. = FALSE)
   }
 
   out <- list(
-    id = res_content$id,
-    item_id = res_content$items$data$id,
-    item_created = res_content$items$data$created, # in seconds
-    plan_id = res_content$plan$id,
-    default_payment_method = res_content$default_payment_method,
-    nickname = res_content$plan$nickname,
-    amount = res_content$plan$amount,
-    currency = res_content$plan$currency,
-    start_date = res_content$start_date,
+    id = sub_res_content$id,
+    cust_id = sub_res_content$customer,
+    item_id = sub_res_content$items$data$id,
+    item_created = sub_res_content$items$data$created, # in seconds
+    plan_id = sub_res_content$plan$id,
+    default_payment_method = sub_res_content$default_payment_method,
+    nickname = sub_res_content$plan$nickname,
+    amount = sub_res_content$plan$amount,
+    currency = sub_res_content$plan$currency,
+    start_date = sub_res_content$start_date,
     # cannot use default trial_period_days because those days do not update
     # based on the value passed to the "trial_period_days" body parameter when
     # the subscription is created
-    trial_end = res_content$trial_end,
-    interval = res_content$plan$interval
+    trial_end = sub_res_content$trial_end,
+    interval = sub_res_content$plan$interval,
+    status = sub_res_content$status
+
   )
 
   out <- lapply(out, function(x) ifelse(is.null(x), NA, x))
@@ -67,7 +72,58 @@ get_stripe_subscription <- function(
 
   out$trial_days_remaining <- trial_days_remaining
 
+  #if stripe has a payment method ID associated with the user, do this...
+  if (length(out$default_payment_method) > 0) {
+    #requesting user payment method to find ZIP and state
+    pm_res <- httr::GET(
+      paste0("https://api.stripe.com/v1/payment_methods/", out$default_payment_method),
+      encode = "form",
+      httr::authenticate(
+        user = getOption("pp")$keys$secret,
+        password = ""
+      )
+    )
+
+    pm_res_content <- jsonlite::fromJSON(
+      httr::content(pm_res, "text", encoding = "UTF-8")
+    )
+
+    #customer location
+    postal_code <- pm_res_content$billing_details$address$postal_code
+    city <- reverse_zipcode(postal_code)$major_city
+    state <- reverse_zipcode(postal_code)$state
+
+    #updating customer location on stripe
+    update_customer_res <- httr::POST(
+      paste0("https://api.stripe.com/v1/customers/", out$cust_id),
+      body = list(
+        'address[[city]]' = city,
+        'address[[postal_code]]' = postal_code,
+        'address[[state]]' = state
+      ),
+      encode = "form",
+      httr::authenticate(
+        user = getOption("pp")$keys$secret,
+        password = ""
+      )
+    )
+
+    # otherwise, create default values for location and payment method ID
+  } else {
+    postal_code <- "NA"
+    city <- "NA"
+    state <- "NA"
+  }
+
+  location <- list(postal_code,
+                   city,
+                   state
+  )
+
+  data <- list(out, location)
+
   out
+  data
 }
 
 
