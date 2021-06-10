@@ -55,7 +55,9 @@ plans_box_module <- function(input, output, session, sub_info) {
 
   disclaimer_text = tags$p(
     class = "text-center",
-    "This plan grants you full access to the ", getOption('polished')$app_name_display, " app",
+    "This plan grants you full access to AdvancedPort's investment tools. Learn more about our plans ",
+    tags$a(href = "https://advancedport.com/pricing", "here.", target = "_blank"),
+    tags$br(),
     tags$br(),
     "By clicking Submit, you agree to authorize collection of payments in accordance with the terms of this plan."
   )

@@ -28,7 +28,7 @@ plan_column_module_ui <- function(id, width) {
           ns("sign_up"),
           "Sign Up Now",
           class = "btn-primary btn-lg",
-          style = "color: #FFF; width: 100%;",
+          style = "color: #FFF; width: 100%; background-color: #6f7bd4; border-color: #6f7bd4;",
         )
       ),
       shinyjs::hidden(tags$div(
@@ -45,10 +45,7 @@ plan_column_module_ui <- function(id, width) {
           ns("your_plan"),
           label = "Your Plan",
           class = "btn btn-primary btn-lg",
-          style = "
-            width: 100%;
-            color: #FFF;
-          "
+          style = "width: 100%; color: #FFF;background-color: #6f7bd4; border-color: #6f7bd4;"
         )
       )
     ),
@@ -193,6 +190,7 @@ plan_column_module <- function(input, output, session,
           shinyFeedback::loadingButton(
             ns('new_plan'),
             'Submit',
+            style = "color: #FFF; background-color: #6f7bd4; border-color: #6f7bd4;",
             loadingLabel = 'Confirming...'
           )
         ),

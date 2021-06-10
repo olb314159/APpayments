@@ -52,7 +52,7 @@ credit_card_module <- function(
         shiny::modalDialog(
           shiny::textInput(
             ns("cardholder_name"),
-            "Cardholder",
+            "Cardholder Name",
             width = "100%"
           ),
           tags$br(),

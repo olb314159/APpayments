@@ -27,14 +27,14 @@ free_trial_banner_module_ui <- function(id) {
     shinyjs::hidden(
       tags$div(
         id = ns("banner"),
-        style = "width: 100%; z-index: 99999999; background-color: #000; position: fixed; bottom: 0; left: 0;",
+        style = "width: 100%; z-index: 99999999; background-color: #212327; position: fixed; bottom: 0; left: 0;",
         tags$div(
           shiny::actionButton(
             ns("close_banner"),
             NULL,
             icon = icon("times", class = paste("fa-2x", ns("color_white"))),
             class = "pull-right",
-            style = "background: rgba(0, 0, 0, 1.0); border: none; display: inline;"
+            style = "background: #212327; border: none; display: inline;"
           )
         ),
         tags$div(
@@ -49,8 +49,8 @@ free_trial_banner_module_ui <- function(id) {
           ),
           shinyFeedback::loadingButton(
             ns("enable_billing"),
-            label = "Enable Billing",
-            style = "color: #FFFFFF; font-size: 20px; display: inline; margin-top: -8px;",
+            label = "Enable Payment",
+            style = "color: #FFFFFF; font-size: 20px; display: inline; margin-top: -8px; background-color: #6f7bd4; border-color: #6f7bd4;",
             loadingLabel = "Redirecting...",
             loadingStyle = "color: #FFFFFF; background-color: grey; border-color: grey; font-size: 20px; display: inline; margin-top: -8px;"
           ),
