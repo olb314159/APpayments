@@ -22,8 +22,7 @@ Imports:
     shinyFeedback,
     shinyjs,
     shinyWidgets,
-    waiter,
-    zipcodeR
+    waiter
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,

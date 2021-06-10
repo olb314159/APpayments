@@ -8,7 +8,6 @@
 #'
 #' @export
 #'
-#' @importFrom zipcodeR reverse_zipcode
 #'
 get_stripe_subscription <- function(
   stripe_subscription_id
@@ -72,58 +71,7 @@ get_stripe_subscription <- function(
 
   out$trial_days_remaining <- trial_days_remaining
 
-  #if stripe has a payment method ID associated with the user, do this...
-  if (length(out$default_payment_method) > 0) {
-    #requesting user payment method to find ZIP and state
-    pm_res <- httr::GET(
-      paste0("https://api.stripe.com/v1/payment_methods/", out$default_payment_method),
-      encode = "form",
-      httr::authenticate(
-        user = getOption("pp")$keys$secret,
-        password = ""
-      )
-    )
-
-    pm_res_content <- jsonlite::fromJSON(
-      httr::content(pm_res, "text", encoding = "UTF-8")
-    )
-
-    #customer location
-    postal_code <- pm_res_content$billing_details$address$postal_code
-    city <- reverse_zipcode(postal_code)$major_city
-    state <- reverse_zipcode(postal_code)$state
-
-    #updating customer location on stripe
-    update_customer_res <- httr::POST(
-      paste0("https://api.stripe.com/v1/customers/", out$cust_id),
-      body = list(
-        'address[[city]]' = city,
-        'address[[postal_code]]' = postal_code,
-        'address[[state]]' = state
-      ),
-      encode = "form",
-      httr::authenticate(
-        user = getOption("pp")$keys$secret,
-        password = ""
-      )
-    )
-
-    # otherwise, create default values for location and payment method ID
-  } else {
-    postal_code <- "NA"
-    city <- "NA"
-    state <- "NA"
-  }
-
-  location <- list(postal_code,
-                   city,
-                   state
-  )
-
-  data <- list(out, location)
-
   out
-  data
 }
 
 
