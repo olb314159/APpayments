@@ -38,7 +38,7 @@ app_module_ui <- function(
       shiny::actionLink(
         ns("go_to_shiny_app"),
         paste0("Get Back to Investing"),
-        style = "margin-left: -15px; margin-top: -7.5px; color: #1a8dc7; font-size: 18px;"
+        style = "margin-left: -15px; margin-top: -7.5px; color: #6f7bd4; font-size: 18px;"
       )
     ),
     polished::profile_module_ui(ns("profile"))
@@ -164,7 +164,7 @@ app_module <- function(id) {
         } else {
           shinyWidgets::show_alert(
             title = "Update Payment Method",
-            text = 'Go to the "Payments" page and enter your payment information to access our investment tools.',
+            text = 'Go to the "Payments" page and enter your information to access our investment tools.',
             type = "error"
           )
         }

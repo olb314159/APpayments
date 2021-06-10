@@ -40,8 +40,8 @@ function credit_card_module(ns_prefix) {
             },
           },
           invalid: {
-            iconColor: '#6f7bd4',
-            color: '#6f7bd4',
+            iconColor: '#dd4b39',
+            color: '#dd4b39',
           },
         },
       });

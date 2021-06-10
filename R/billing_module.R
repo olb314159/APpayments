@@ -256,8 +256,8 @@ billing_module <- function(input, output, session, sub_info) {
           shiny::actionButton(
             ns("submit_cancel"),
             "Yes, Submit",
-            class = "btn-danger",
-            style = "color: #FFF; background-color: #6f7bd4;"
+            class = "btn-primary",
+            style = "color: #FFF; background-color: #6f7bd4; border-color: #6f7bd4;"
           )
         ),
         size = "m",
@@ -366,8 +366,8 @@ billing_module <- function(input, output, session, sub_info) {
           shiny::actionButton(
             ns("submit_continue"),
             "Yes, Submit",
-            class = "btn-danger",
-            style = "color: #FFF; background-color: #6f7bd4;"
+            class = "btn-primary",
+            style = "color: #FFF; background-color: #6f7bd4; border-color: #6f7bd4;"
           )
         ),
         size = "m",
@@ -417,7 +417,7 @@ billing_module <- function(input, output, session, sub_info) {
       if (!identical(res_code, 200L)) {
         print(res_content)
         print(paste0("status code: ", res_code))
-        stop("unable to delete subscription")
+        stop("unable to update subscription")
       }
 
       # Remove Subscription ID from 'billing' table and update the free trial days
@@ -428,7 +428,7 @@ billing_module <- function(input, output, session, sub_info) {
         encode = "json",
         body = list(
           subscription_uid = billing$uid,
-          stripe_subscription_id = subscription$id #NA
+          stripe_subscription_id = subscription$id
         ),
         httr::authenticate(
           user = getOption("polished")$api_key,
@@ -446,11 +446,11 @@ billing_module <- function(input, output, session, sub_info) {
       }
 
       session$userData$billing_trigger(session$userData$billing_trigger() + 1)
-      shinyFeedback::showToast("success", "Subscription Cancelled Successfully")
+      shinyFeedback::showToast("success", "Subscription Continued Successfully")
     }, error = function(err) {
 
       print(err)
-      shinyFeedback::showToast("error", "Error Cancelling Subscription")
+      shinyFeedback::showToast("error", "Error continuing Subscription")
     })
 
     shiny::removeModal()

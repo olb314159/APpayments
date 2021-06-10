@@ -2,7 +2,7 @@ credit_card_module_ui <- function(id) {
   ns <- NS(id)
 
   tagList(
-    tags$script(src = "polishedpayments/js/credit_card_module.js"),
+    tags$script(src = "APpayments/js/credit_card_module.js"),
     tags$script(paste0("credit_card_module('", ns(''), "')"))
   )
 }
@@ -52,9 +52,8 @@ credit_card_module <- function(
         shiny::modalDialog(
           shiny::textInput(
             ns("cardholder_name"),
-            "Name on Card",
-            width = "100%",
-            placeholder = 'John K Smith'
+            "Cardholder",
+            width = "100%"
           ),
           tags$br(),
           tags$form(
@@ -80,7 +79,7 @@ credit_card_module <- function(
             style = "text-align: center;",
             disclaimer_text
           ),
-          title = "Billing Information",
+          title = "Card Information",
           footer = tags$span(
             tags$div(
               class = 'pull-left',
@@ -92,6 +91,7 @@ credit_card_module <- function(
             shinyFeedback::loadingButton(
               ns('card_button'),
               'Submit',
+              style = "color: #FFF; background-color: #6f7bd4; border-color: #6f7bd4;",
               loadingLabel = 'Confirming...'
             )
           ),
@@ -258,11 +258,11 @@ credit_card_module <- function(
 
       shinyFeedback::showToast(
         type = 'success',
-        message = 'Your payment method and subscription have been updated'
+        message = 'Your payment information and subscription have been updated'
       )
     }, error = function(err) {
       print(err)
-      shinyFeedback::showToast("error", "Payment method authenticated, but there was an error saving your Payment Method")
+      shinyFeedback::showToast("error", "Payment authenticated, but there was an error saving your information")
     })
 
     setup_intent_id(NULL)
