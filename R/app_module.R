@@ -37,7 +37,7 @@ app_module_ui <- function(
     left_menu = tagList(
       shiny::actionLink(
         ns("go_to_shiny_app"),
-        paste0("Back to Investing"),
+        paste0("Back to Analytics"),
         style = "margin-left: -15px; margin-top: -7.5px; color: #6f7bd4; font-size: 18px;"
       )
     ),
